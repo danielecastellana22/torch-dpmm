@@ -17,11 +17,7 @@ def _get_gaussian_init_vals(x, D, mask, v_c=None, v_n=None):
 
     K_to_init = th.sum(mask).item()
     if K_to_init == 0:
-        warnings.warn('There are no clusters to initialise!', UserWarning)
-        return (th.tensor([], device=mask.device),
-                th.tensor([], device=mask.device),
-                th.tensor([], device=mask.device),
-                th.tensor([], device=mask.device))
+        raise ValueError('There are no clusters to initialise!')
 
     # compute initialisation for tau
     if x is None:
