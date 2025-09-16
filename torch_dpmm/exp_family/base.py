@@ -6,7 +6,20 @@ __all__ = ['ExponentialFamilyDistribution']
 
 
 class ExponentialFamilyDistribution:
+    """
+    Represents an abstraction for an Exponential Family Distribution.
 
+    The class provides a structured interface to work effectively with
+    Exponential Family Distributions. It focuses on defining and validating
+    key distribution parameters, and it outlines methods for implementing
+    important mathematical properties like base measure (h(x)), sufficient statistics
+    (T(x)), log-partition function (A(eta)), and transformations between natural
+    and common parameters.
+
+    This class is designed to be subclassed to create specific Exponential Family
+    Distributions. Subclasses should implement the methods necessary for their specific
+    use case to compute the properties and transformations defined in this class.
+    """
     # eta: natural parameters of the distribution
     # theta: common parameters of the distribution
     # x: a sample of the distribution
@@ -63,7 +76,7 @@ class ExponentialFamilyDistribution:
         """ The base measure h(x).
 
         Args:
-            x (list[th.Tensor]) :  the samples of the distribution. It is a list of tensor of size BS x ?.
+            x (list[th.Tensor]):  the samples of the distribution. It is a list of tensors, eahc with size BS x ?.
 
         Returns:
             th.Tensor: the value of h(x).
@@ -87,22 +100,22 @@ class ExponentialFamilyDistribution:
         """ The sufficient statistics T(x). If idx is not None, we return only the statistic at in position idx.
 
         Args:
-            x (list[th.Tensor]) :  the samples of the distribution. It is a list of tensor of size BS x ?.
+            x (list[th.Tensor]): the samples of the distribution. It is a list of tensors, each with size BS x ?.
             idx (int): the idx of the parameter we want to retrieve
 
         Returns:
-            list[th.Tensor] : the list of the sufficient statistics T(x). It is a list of tensors if idx is None.
+            list[th.Tensor]: the list of the sufficient statistics T(x). It is a list of tensors if idx is None.
         """
         raise NotImplementedError('Should be implemented in subclasses!')
 
     @classmethod
     def expected_T_x(cls, eta: list[th.Tensor], idx: int = None) -> list[th.Tensor] | th.Tensor:
-        """ The expected value of the sufficient statitistics T(x), i.e. E_{P(x|eta)}[T(x)].
-        The expecation is equal to the derivative of A(eta) w.r.t. the eta.
-        If idx is not None, we return only the expextation of the statistic at in position idx.
+        """ The expected value of the sufficient statistics T(x), i.e., E_{P(x|eta)}[T(x)].
+        The expectation is equal to the derivative of A(eta) w.r.t. eta.
+        If idx is not None, we return only the expectation of the statistic at in position idx.
 
         Args:
-            eta (list[th.Tensor]): the natural paramters. It is a list of tensors of size K x ?.
+            eta (list[th.Tensor]): the natural parameters. It is a list of tensors of size K x ?.
             idx (int): the idx of the parameter we want to retrieve
 
         Returns:
@@ -136,7 +149,7 @@ class ExponentialFamilyDistribution:
 
     @classmethod
     def kl_div(cls, p_eta: list[th.Tensor], q_eta: list[th.Tensor]):
-        """ Compute the KL divergence beween p and q.
+        """ Compute the KL divergence between p and q.
 
         Args:
             p_eta (list[th.Tensor]): the common parameters of p.

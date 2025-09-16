@@ -9,13 +9,68 @@ __all__ = ['FullNIW', 'DiagonalNIW', 'SingleNIW', 'SphericalNormal']
 
 
 class BaseNIW(ExponentialFamilyDistribution, ABC):
+    r"""Represents the base class for the Normal-Inverse-Wishart (NIW) distribution as an
+    exponential family distribution.
 
-    # We follow https://arxiv.org/pdf/2405.16088v1
-    # x = mu, Sigma
-    # x ~ NIW(mu_0, lambda, Phi, nu)
-    # common params: mu_0, lambda, Phi, nu
-    # natural params: eta_1, eta_2, eta_3, eta_4
+     .. :math:
+        \mu, \Sigma \sim NIW(\mu_0, \lambda, \Phi, \nu)
 
+    This class is a foundational implementation of the NIW distribution and follows
+    the conventions and parameterization as described in related literature. The NIW
+    distribution is commonly used as a prior distribution for a multivariate normal
+    distribution with unknown mean and covariance. It is parameterized by four common
+    parameters: `mu0`, `lambda`, `Phi`, and `nu`, and its natural parameters are
+    denoted as `eta_1`, `eta_2`, `eta_3`, and `eta_4`. The class defines the structure
+    of the distribution, relationships between parameters, and mathematical computations
+    for its moments, sufficient statistics, and other properties. We follow https://arxiv.org/pdf/2405.16088v1.
+
+    Methods
+    -------
+    _h_x(x: list[th.Tensor]) -> th.Tensor
+        Computes the sufficient statistic function h(x) for the distribution.
+    _A_eta(eta: list[th.Tensor]) -> th.Tensor
+        Computes the log partition function for the given natural parameters.
+    _T_x(x: list[th.Tensor], idx: int | None = None) -> list[th.Tensor] | th.Tensor
+        Returns the sufficient statistics T(x) for specific indices or all indices.
+    expected_T_x(eta: list[th.Tensor], idx: int | None = None) -> list[th.Tensor] | th.Tensor
+        Computes the expected sufficient statistics T(x) under the distribution given
+        the natural parameters.
+    natural_to_common(eta: list[th.Tensor]) -> list[th.Tensor]
+        Converts natural parameters to the common parameterization of the distribution.
+    common_to_natural(theta: list[th.Tensor]) -> list[th.Tensor]
+        Converts common parameters to the natural parameterization of the distribution.
+
+    Attributes
+    ----------
+    _theta_names: list[str]
+        Names of the common parameters for the distribution: ['mu0', 'lambda', 'Phi', 'nu'].
+    _mat_ops_class: Type[BaseMatrixOperations] | None
+        A reference to the matrix operations class used to handle matrix computations
+        required by the distribution.
+
+    Parameters
+    ----------
+    x : list[th.Tensor]
+        Observations or variables associated with the distribution.
+    eta : list[th.Tensor]
+        Natural parameters of the NIW distribution.
+    theta : list[th.Tensor]
+        Common parameters of the NIW distribution.
+    idx : int, optional
+        Index to specify a specific sufficient statistic or moment.
+
+    Returns
+    -------
+    th.Tensor | list[th.Tensor]
+        The result of the computation, such as sufficient statistics, moments,
+        or other properties, depending on the method invoked.
+
+    Raises
+    ------
+    Any errors related to incorrect parameter types, shape mismatches, or other issues
+    specific to the implementation or mathematical properties are not explicitly
+    documented here but are expected in line with the implementation details.
+    """
     _theta_names = ['mu0', 'lambda', 'Phi', 'nu']
     _mat_ops_class = None
 
@@ -104,21 +159,109 @@ class BaseNIW(ExponentialFamilyDistribution, ABC):
 
 
 class FullNIW(BaseNIW):
+    """
+    Class representing the FullNIW distribution.
 
+    This class extends the BaseNIW class and provides functionality specific to
+    the Full Normal-Inverse-Wishart (NIW) distribution. The FullNIW class is
+    designed for cases where data follow a multivariate normal distribution
+    with unknown means and covariances, governed by NIW priors. It includes
+    specific constraints and shapes for its parameters.
+
+    Attributes:
+        _mat_ops_class: Specifies the operations class used for handling matrix
+        operations specific to this NIW model.
+
+        _theta_shape_list: List of parameter shapes used in the distribution, where:
+            '[K, D]' indicates K distributions over D dimensions,
+            '[K]' indicates a vector parameter,
+            '[K, D, D]' indicates distributional parameters involving matrices,
+            '[K]' functions as a scalar count parameter in the context.
+
+        _theta_constraints_list: List of constraints for the parameters, where:
+            'AnyValue()' indicates the parameter can take any value,
+            'Positive()' requires the parameter to be positive,
+            'PositiveDefinite()' requires the parameter to be a positive definite matrix,
+            'GreaterThan(D+1)' requires the parameter to be strictly greater than D+1.
+    """
     _mat_ops_class = FullMatOps
     _theta_shape_list = ['[K, D]', '[K]', '[K, D, D]', '[K]']
     _theta_constraints_list = ['AnyValue()', 'Positive()', 'PositiveDefinite()', 'GreaterThan(D+1)']
 
 
 class DiagonalNIW(BaseNIW):
+    """
+    Represents a Diagonal Normal-Inverse-Wishart (NIW) distribution.
 
+    This class is a specific implementation of the Normal-Inverse-Wishart
+    distribution where the covariance matrices are assumed to be diagonal. It
+    inherits from the BaseNIW class and defines specific operations and
+    constraints tailored for diagonal covariance handling.
+
+    Attributes:
+        _mat_ops_class (type): Specifies the operations class used for matrix
+            manipulations in the distribution. Here, it is set to
+            DiagonalMatOps, which is designed to handle diagonal matrices.
+        _theta_shape_list (list): Holds the shapes of the parameter arrays used in
+            the Diagonal NIW distribution. Each entry corresponds to one
+            parameter's shape.
+        _theta_constraints_list (list): Defines constraints for the parameters
+            of the Diagonal NIW distribution. These constraints enforce valid
+            values for each parameter to ensure mathematical correctness.
+    """
     _mat_ops_class = DiagonalMatOps
     _theta_shape_list = ['[K, D]', '[K]', '[K, D]', '[K]']
     _theta_constraints_list = ['AnyValue()', 'Positive()', 'Positive()', 'GreaterThan(D+1)']
 
 
 class SingleNIW(DiagonalNIW):
+    """
+    Represents a Single Normal-Inverse-Wishart (NIW) distribution as a special case
+    of a Diagonal Normal-Inverse-Wishart (DiagonalNIW).
 
+    This class is specifically designed for handling NIW distributions with a
+    single component. It extends the general DiagonalNIW and overrides some of
+    its key methods to adapt functionality for the single-component case. It is
+    useful in probabilistic modeling and Bayesian statistical applications that
+    involve Normal-Inverse-Wishart priors. The class provides capabilities for
+    conversions between natural and common parameters, computation of expected
+    values, and transformation of data.
+
+    Methods
+    -------
+    _h_x(cls, x: list[th.Tensor]) -> th.Tensor
+        Computes a transformation on the provided data tensors specific
+        to the SingleNIW model.
+
+    _A_eta(cls, eta: list[th.Tensor]) -> th.Tensor
+        Calculates a value associated with the natural parameters of
+        the SingleNIW model.
+
+    _T_x(cls, x: list[th.Tensor], idx=None) -> list[th.Tensor] | th.Tensor
+        Computes sufficient statistics for the given data under the
+        SingleNIW setting.
+
+    expected_T_x(cls, eta: list[th.Tensor], idx=None) -> list[th.Tensor] | th.Tensor
+        Computes the expected sufficient statistics for the given natural
+        parameters under the SingleNIW model.
+
+    natural_to_common(cls, eta: list[th.Tensor]) -> list[th.Tensor]
+        Converts natural parameters into common parameters for the SingleNIW model.
+
+    common_to_natural(cls, theta: list[th.Tensor]) -> list[th.Tensor]
+        Converts common parameters into natural parameters for the SingleNIW model.
+
+    Raises
+    ------
+    This class does not describe raised errors in the documentation. Refer to the
+    individual methods for potential exceptions.
+
+    Attributes
+    ----------
+    The attributes and constraints for this class are inherited and pre-defined.
+    Special attribute types such as `_theta_shape_list` and `_theta_constraints_list`
+    are excluded from the documentation as they are internal.
+    """
     _theta_shape_list = ['[K, D]', '[K]', '[K]', '[K]']
     _theta_constraints_list = ['AnyValue()', 'Positive()', 'Positive()', 'GreaterThan(D+1)']
 
@@ -182,7 +325,46 @@ class SingleNIW(DiagonalNIW):
 
 
 class SphericalNormal(ExponentialFamilyDistribution):
+    """
+    Represents a spherical normal distribution, which is a specific type of
+    exponential family distribution.
 
+    This class provides functionality for parameter conversion between natural
+    and common forms, computation of sufficient statistics, log-partition
+    functions, and expected sufficient statistics, specifically for spherical
+    normal distributions where data has a fixed covariance.
+
+    Attributes:
+        theta_names: List of parameter names in the common parameterization
+                     (mu, lam).
+        theta_shape_list: List describing the expected shapes of the parameters
+                          in the common parameterization.
+        theta_constraints_list: List of constraints for each parameter to ensure
+                                validity in the common parameterization.
+
+    Methods:
+        _h_x(x):
+            Computes the base measure term for the distribution.
+
+        _A_eta(eta):
+            Computes the log-partition function for the series of natural
+            parameters.
+
+        _T_x(x, idx):
+            Computes the sufficient statistics for a given sample or returns
+            specific sufficient statistics if an index is provided.
+
+        expected_T_x(eta, idx):
+            Computes the expected sufficient statistics based on the given
+            natural parameters, or returns specific expected statistics
+            if an index is provided.
+
+        natural_to_common(eta):
+            Converts the natural parameters to the common parameterization.
+
+        common_to_natural(theta):
+            Converts the common parameters to the natural parameterization.
+    """
     # x
     # x ~ UnitNormal(mu_0, lambda) = N(mu, 1/lam*I)
     # common params: mu_0, lambda
