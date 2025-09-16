@@ -35,6 +35,11 @@ You can install *torch_dpmm* by running the command:
 pip install git+https://github.com/danielecastellana22/torch_dpmm.git@main 
 ```
 
+To execute the examples, you need to install also other packages by executing the command:
+```
+pip install tqdm matplotlib jupyter-lab
+```
+
 ## Implementation Details
 The implementation is fully based on the natural parametrisation of the [exponential family distribution](https://en.wikipedia.org/wiki/Exponential_family). This allows to compute the natural gradient of the variational parameters in a straightforward way. Check this [paper](https://jmlr.org/papers/volume14/hoffman13a/hoffman13a.pdf) for more details on the Stochastic Variational Inference (SVI) framework and the computation of the natural gradient of the variational parameters.
 
