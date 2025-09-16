@@ -30,9 +30,9 @@ We provide a complete example [here](examples/first_example.ipynb).
 We recommend to download the notebook to view the animations.
 
 ### Installation
-You can install *torch_dpmm* by running the command:
+You can install *torch-dpmm* by running the command:
 ```
-pip install git+https://github.com/danielecastellana22/torch_dpmm.git@main 
+pip install git+https://github.com/danielecastellana22/torch-dpmm.git@main 
 ```
 
 To execute the examples, you need to install also other packages by executing the command:

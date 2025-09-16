@@ -1,5 +1,5 @@
 [project]
-name = "torch_dpmm"
+name = "torch-dpmm"
 license = "MIT AND (Apache-2.0 OR BSD-2-Clause)"
 version = "0.0.6"
 authors = [
