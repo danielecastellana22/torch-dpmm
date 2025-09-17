@@ -4,7 +4,7 @@ from torch_dpmm.bayesian_distributions import FullNormalINIW, DiagonalNormalNIW,
 from sklearn.cluster import kmeans_plusplus
 
 
-__all__ = ['FullGaussianDPMM', 'DiagonalGaussianDPMM', 'UnitGaussianDPMM', 'SingleGaussianDPMM']
+__all__ = ['FullGaussianDPMM', 'DiagonalGaussianDPMM', 'UnitGaussianDPMM', 'IsotropicGaussianDPMM']
 
 
 def _get_gaussian_init_vals(x, D, mask, v_c=None, v_n=None):
@@ -174,7 +174,7 @@ class DiagonalGaussianDPMM(DPMM):
         return self.emission_distr_class.common_to_natural([tau, c, B, n])
 
 
-class SingleGaussianDPMM(DPMM):
+class IsotropicGaussianDPMM(DPMM):
     """
     Represents a Dirichlet Process Mixture Model (DPMM) with Isotropic Gaussian components.
 
@@ -218,7 +218,7 @@ class SingleGaussianDPMM(DPMM):
 
         """
         mu0, lam, Phi, nu = _to_common_params(D, mu_prior, mu_prior_strength, var_prior, var_prior_strength)
-        super(SingleGaussianDPMM, self).__init__(K, D, alphaDP, SingleNormalNIW, [mu0, lam, Phi, nu])
+        super(IsotropicGaussianDPMM, self).__init__(K, D, alphaDP, SingleNormalNIW, [mu0, lam, Phi, nu])
         self.init_var_params()
 
     def _get_init_vals_emission_var_eta(self, x: th.Tensor | None, mask):
