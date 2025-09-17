@@ -15,8 +15,8 @@ def plot_Gauss2D_contour(
     --------------
     Plot created on current axes
     '''
-    if ax is not None:
-        plt.sca(ax)
+    if ax is None:
+        ax = plt.gca()
 
     mu = np.asarray(mu)
     Sigma = np.asarray(Sigma)
@@ -40,7 +40,7 @@ def plot_Gauss2D_contour(
     plotted_lines = []
     for r in radiusLengths:
         Z = r * Zellipse + mu[:, np.newaxis]
-        p = plt.plot(Z[0], Z[1], '.',
+        p = ax.plot(Z[0], Z[1], '.',
                      markersize=markersize,
                      markerfacecolor=color,
                      markeredgecolor=color, **kwargs)

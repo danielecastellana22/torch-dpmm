@@ -37,7 +37,7 @@ pip install git+https://github.com/danielecastellana22/torch-dpmm.git@main
 
 To execute the examples, you need to install also other packages by executing the command:
 ```
-pip install tqdm matplotlib jupyter-lab
+pip install tqdm matplotlib jupyterlab
 ```
 
 ## Implementation Details
